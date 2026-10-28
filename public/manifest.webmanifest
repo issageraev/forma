@@ -1,0 +1,12 @@
+{
+  "name": "Форма — дневник зала",
+  "short_name": "Форма",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E8E9E5",
+  "theme_color": "#E8E9E5",
+  "icons": [
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
