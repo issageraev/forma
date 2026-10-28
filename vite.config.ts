@@ -4,7 +4,11 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 import pkg from './package.json'
 
+// На GitHub Pages приложение живёт в /forma/, локально — в корне
+const base = process.env.BASE_PATH ?? '/'
+
 export default defineConfig({
+  base,
   define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   plugins: [
     react(),
@@ -15,8 +19,8 @@ export default defineConfig({
         name: 'Форма — дневник зала',
         short_name: 'Форма',
         lang: 'ru',
-        start_url: '/',
-        scope: '/',
+        start_url: base,
+        scope: base,
         display: 'standalone',
         orientation: 'portrait',
         background_color: '#E8E9E5',
@@ -27,7 +31,7 @@ export default defineConfig({
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
-      workbox: { globPatterns: ['**/*.{js,css,html,svg,png,woff2}'], navigateFallback: '/index.html' },
+      workbox: { globPatterns: ['**/*.{js,css,html,svg,png,woff2}'] },
     }),
   ],
   server: { port: 5180 },
