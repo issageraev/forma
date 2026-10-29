@@ -37,26 +37,26 @@ export function ExercisePicker({ open, onClose, list, onPick, title = 'Упра�
   const close = () => { reset(); onClose() }
 
   return (
-    <Sheet open={open} onClose={close} title={title}>
-      <label className="search">
-        <Icon name="search" size={16} />
-        <input value={q} onChange={e => { setQ(e.target.value); setCreating(false) }} placeholder="Название или синоним" autoCorrect="off" enterKeyHint="search" />
-        {q && <button className="icon-btn ghost sm" onClick={() => setQ('')} aria-label="Очистить"><Icon name="x" size={14} /></button>}
-      </label>
-
-      {!q && (
-        <div className="chips">
-          <button className={`chip ${cat == null ? 'on' : ''}`} onClick={() => setCat(null)}>Все</button>
-          {CATEGORIES.map(c => <button key={c} className={`chip ${cat === c ? 'on' : ''}`} onClick={() => setCat(c)}>{c}</button>)}
-        </div>
-      )}
-
-      {similar && !creating && (
-        <div className="banner info">
-          <span className="grow">Похоже на <b>«{similar.name}»</b>. Это оно?</span>
-          <button className="pill sm dark" onClick={() => pick(similar)}>Да</button>
-        </div>
-      )}
+    <Sheet open={open} onClose={close} title={title} tall>
+      <div className="picker-top">
+        <label className="search">
+          <Icon name="search" size={18} />
+          <input value={q} onChange={e => { setQ(e.target.value); setCreating(false) }} placeholder="Название или синоним" autoCorrect="off" autoCapitalize="sentences" enterKeyHint="search" />
+          {q && <button className="icon-btn ghost sm" onClick={() => { setQ(''); setCreating(false) }} aria-label="Очистить"><Icon name="x" size={15} /></button>}
+        </label>
+        {!q && (
+          <div className="chips">
+            <button className={`chip ${cat == null ? 'on' : ''}`} onClick={() => setCat(null)}>Все</button>
+            {CATEGORIES.map(c => <button key={c} className={`chip ${cat === c ? 'on' : ''}`} onClick={() => setCat(c)}>{c}</button>)}
+          </div>
+        )}
+        {similar && !creating && (
+          <div className="banner info">
+            <span className="grow">Похоже на <b>«{similar.name}»</b>. Это оно?</span>
+            <button className="pill sm dark" onClick={() => pick(similar)}>Да</button>
+          </div>
+        )}
+      </div>
 
       {creating ? (
         <div className="card">
@@ -65,7 +65,7 @@ export function ExercisePicker({ open, onClose, list, onPick, title = 'Упра�
           <div className="chips wrap">{CATEGORIES.map(c => <button key={c} className={`chip ${newCat === c ? 'on' : ''}`} onClick={() => setNewCat(c)}>{c}</button>)}</div>
           <span className="section-label">Тип</span>
           <div className="chips wrap">{KINDS.map(k => <button key={k.value} className={`chip ${newKind === k.value ? 'on' : ''}`} onClick={() => setNewKind(k.value)}>{k.label}</button>)}</div>
-          <button className="pill dark block" onClick={async () => pick(await ensureExercise(q, newCat, newKind))}>Создать и добавить</button>
+          <button className="pill dark block lg" onClick={async () => pick(await ensureExercise(q, newCat, newKind))}>Создать и добавить</button>
         </div>
       ) : (
         <div className="picker">
@@ -75,7 +75,7 @@ export function ExercisePicker({ open, onClose, list, onPick, title = 'Упра�
           {results.map(e => (
             <button key={e.id} onClick={() => pick(e)}><span>{e.name}</span><small>{e.category}</small></button>
           ))}
-          {!results.length && !q.trim() && <p className="muted">Нет упражнений в этой группе</p>}
+          {!results.length && <p className="muted picker-empty">{q.trim() ? 'В справочнике такого нет — создайте новое выше' : 'Нет упражнений в этой группе'}</p>}
         </div>
       )}
     </Sheet>

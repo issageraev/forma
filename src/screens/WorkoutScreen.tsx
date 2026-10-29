@@ -77,7 +77,7 @@ function ExerciseBlock({ we, index, exercise, workout, workouts, expanded, isCur
 
   if (!expanded) {
     return (
-      <section className={`card ex-card ${complete ? 'complete' : ''}`} style={{ padding: '14px 16px' }}>
+      <section className={`card ex-card slim ${complete ? 'complete' : ''}`}>
         <button className="collapsed" onClick={onToggle}>
           <span className={`ex-num ${complete ? 'ok' : 'idle'}`}>{complete ? <Icon name="check" size={15} stroke={2.6} /> : index + 1}</span>
           <div>
@@ -250,12 +250,12 @@ export function WorkoutView({ workout, workouts, exercises, settings, titles, on
       {workout.autoFinished && <div className="banner info">Завершена автоматически — через час после последнего подхода.</div>}
 
       {template && (
-        <button className="card" style={{ flexDirection: 'row', alignItems: 'center', gap: 12, textAlign: 'left', borderColor: 'rgba(226,132,58,.35)' }}
+        <button className="card template-card tap"
           onClick={() => updateWorkout(workout.id, w => {
             w.exercises = template.exercises.map(e => ({ id: crypto.randomUUID(), exerciseId: e.exerciseId, sets: e.sets.filter(s => s.done || s.w != null).map(s => newSet(s.w, s.r)) }))
           })}>
-          <span className="icon-btn sm" style={{ color: 'var(--orange)' }}><Icon name="copy" size={16} /></span>
-          <div className="grow"><b>Повторить «{template.title}»</b><div className="muted small">{fmtShort(template.date)} · {template.exercises.length} упражнения с прошлыми весами</div></div>
+          <span className="icon-btn sm accent"><Icon name="copy" size={16} /></span>
+          <div className="grow stack"><b>Повторить «{template.title}»</b><div className="muted small">{fmtShort(template.date)} · {template.exercises.length} упражнения с прошлыми весами</div></div>
           <Icon name="right" size={16} />
         </button>
       )}

@@ -11,7 +11,7 @@ import { fmt } from '../domain/numbers'
 import { normalize } from '../domain/exercises'
 import { useKeyLifts } from './useKeyLifts'
 
-export function HomeScreen({ workouts, active, upcoming, lastDone, body, exercises, settings, onOpen, onSettings, onTab }: {
+export function HomeScreen({ workouts, active, upcoming, lastDone, body, exercises, settings, theme, onToggleTheme, onOpen, onSettings, onTab }: {
   workouts: Workout[]
   active?: Workout
   upcoming?: Workout
@@ -19,6 +19,8 @@ export function HomeScreen({ workouts, active, upcoming, lastDone, body, exercis
   body: BodyEntry[]
   exercises: Map<string, Exercise>
   settings: Settings
+  theme: 'light' | 'dark'
+  onToggleTheme: (origin: { x: number; y: number }) => void
   onOpen: (id: string) => void
   onSettings: () => void
   onTab: (t: 'workout' | 'analytics') => void
@@ -57,6 +59,10 @@ export function HomeScreen({ workouts, active, upcoming, lastDone, body, exercis
     <div className="page">
       <div className="header">
         <div><p className="eyebrow">{fmtLong(today)}</p><h1 className="title">Моя форма</h1></div>
+        <button className="icon-btn theme-btn" aria-label={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
+          onClick={e => { const r = e.currentTarget.getBoundingClientRect(); onToggleTheme({ x: r.left + r.width / 2, y: r.top + r.height / 2 }) }}>
+          <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={20} />
+        </button>
         <button className="icon-btn" onClick={onSettings} aria-label="Настройки"><Icon name="gear" size={20} /></button>
       </div>
 
@@ -82,13 +88,15 @@ export function HomeScreen({ workouts, active, upcoming, lastDone, body, exercis
           <div className="card-head">
             {next.status === 'active' ? <span className="live"><i />Идёт тренировка</span> : <Badge status="planned">{fmtRelative(next.date, today)}{next.time ? ` · ${next.time}` : ''}</Badge>}
           </div>
+          <div className="stack">
           <h3 className="card-title">{next.title || 'Без названия'}</h3>
           <p className="muted">
             {next.exercises.length ? `${next.exercises.length} упражнения · ${doneSetsCount(next)} из ${next.exercises.reduce((a, e) => a + e.sets.length, 0)} подходов` : 'Упражнения добавите по ходу'}
           </p>
+          </div>
           {next.exercises.length > 0 && (
             <div className="chips">
-              {next.exercises.slice(0, 4).map(e => <span key={e.id} className="chip" style={{ display: 'inline-flex', alignItems: 'center' }}>{exercises.get(e.exerciseId)?.name}</span>)}
+              {next.exercises.slice(0, 4).map(e => <span key={e.id} className="chip">{exercises.get(e.exerciseId)?.name}</span>)}
             </div>
           )}
           <button className="pill dark lg block" onClick={async () => { if (next.status === 'planned' && next.date === today) await startWorkout(next.id); onOpen(next.id) }}>
@@ -108,8 +116,10 @@ export function HomeScreen({ workouts, active, upcoming, lastDone, body, exercis
       {lastDone && (
         <section className="card">
           <div className="card-head"><h2>Последняя тренировка</h2><Badge status="done" /></div>
-          <h3 style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.02em' }}>{lastDone.title || 'Без названия'}</h3>
-          <p className="muted">{fmtShort(lastDone.date)} · {lastDone.exercises.length} упражнения · {doneSetsCount(lastDone)} подходов</p>
+          <div className="stack">
+            <h3 className="card-sub">{lastDone.title || 'Без названия'}</h3>
+            <p className="muted">{fmtShort(lastDone.date)} · {lastDone.exercises.length} упражнения · {doneSetsCount(lastDone)} подходов</p>
+          </div>
           <div className="tiles">
             <div className="tile"><Icon name="bolt" size={15} stroke={2.2} /><b>{fmt(tonnage(lastDone) / 1000, 2)} т</b><span>тоннаж</span></div>
             <div className="tile"><Icon name="clock" size={15} stroke={2.2} /><b>{lastDone.startedAt && lastDone.finishedAt ? fmtDuration(lastDone.finishedAt - lastDone.startedAt) : '—'}</b><span>время</span></div>
@@ -121,7 +131,7 @@ export function HomeScreen({ workouts, active, upcoming, lastDone, body, exercis
 
       {workouts.length > 0 && (
         <div className="two">
-          <section className="card" style={{ padding: 16 }}>
+          <section className="card metric">
             <div className="card-head"><h2>Вес тела</h2><Icon name="scale" size={16} /></div>
             {weight ? (
               <>
@@ -134,13 +144,13 @@ export function HomeScreen({ workouts, active, upcoming, lastDone, body, exercis
               <button className="link" style={{ textAlign: 'left' }} onClick={onSettings}>Указать вес и рост</button>
             )}
           </section>
-          <section className="card" style={{ padding: 16 }} onClick={() => onTab('analytics')}>
+          <section className="card metric tap" onClick={() => onTab('analytics')}>
             <div className="card-head"><h2>Сила</h2><Icon name="trend" size={16} /></div>
             <span className="big-num">{lifts.index == null ? '—' : `${lifts.index >= 0 ? '+' : ''}${fmt(lifts.index)}`}<small>%</small></span>
             <span className="muted small">за 4 недели по основным</span>
-            <div className="list" style={{ marginTop: 2 }}>
+            <div className="list" style={{ marginTop: 6 }}>
               {lifts.rows.slice(0, 3).map(l => (
-                <div key={l.id} style={{ padding: '6px 0', fontSize: 12.5 }}>
+                <div key={l.id} style={{ padding: '8px 0', fontSize: 13 }}>
                   <span className="grow">{l.short}</span>
                   <b className={l.change != null && l.change > 0 ? 'good' : ''}>{l.level ? fmt(l.level, 0) : '—'}</b>
                 </div>

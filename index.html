@@ -12,6 +12,15 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>Форма</title>
+    <script>
+      // Тема применяется до отрисовки, чтобы не было вспышки светлого экрана
+      try {
+        var p = localStorage.getItem('forma.theme') || 'light'
+        var dark = p === 'dark' || (p === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+        if (dark) document.querySelector('meta[name="theme-color"]').setAttribute('content', '#15180F')
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

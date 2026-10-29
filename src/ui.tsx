@@ -8,7 +8,11 @@ const PATHS = {
   calendar: 'M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM4 10h16M8 3v4M16 3v4',
   dumbbell: 'M6.5 6.5v11M3.5 9v6M17.5 6.5v11M20.5 9v6M6.5 12h11',
   chart: 'M4 20V10M10 20V4M16 20v-7M22 20H2',
-  gear: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 2.5v2.5M12 19v2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12H5M19 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8',
+  gear: 'M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+  sun: 'M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41',
+  moon: 'M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z',
+  palette: 'M12 22a10 10 0 1 1 10-10c0 2.8-2.2 4-4 4h-2.2a1.8 1.8 0 0 0-1.3 3.1A1.8 1.8 0 0 1 12 22zM7.5 11.5h.01M10.5 7.5h.01M15.5 7.5h.01',
+  user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0',
   plus: 'M12 5v14M5 12h14',
   check: 'M5 12.5l4.5 4.5L19 7',
   left: 'M15 5l-7 7 7 7',
@@ -49,24 +53,57 @@ export function Badge({ status, children }: { status: DayStatus | 'empty'; child
   return <span className={`badge badge-${status}`}><i />{children ?? STATUS_LABEL[status]}</span>
 }
 
-export function Sheet({ open, onClose, title, children, wide }: { open: boolean; onClose: () => void; title?: ReactNode; children: ReactNode; wide?: boolean }) {
+/**
+ * Нижняя панель. Подстраивается под клавиатуру iPhone (visualViewport): поле поиска
+ * и список остаются над клавиатурой. Закрывается с анимацией.
+ */
+export function Sheet({ open, onClose, title, children, tall }: { open: boolean; onClose: () => void; title?: ReactNode; children: ReactNode; tall?: boolean }) {
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const [closing, setClosing] = useState(false)
+  const closeRef = useRef(onClose)
+  closeRef.current = onClose
+
+  const requestClose = useCallback(() => {
+    setClosing(c => {
+      if (!c) setTimeout(() => { setClosing(false); closeRef.current() }, 210)
+      return true
+    })
+  }, [])
+
   useEffect(() => {
     if (!open) return
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && requestClose()
     window.addEventListener('keydown', onKey)
-    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey) }
-  }, [open, onClose])
+    const vv = window.visualViewport
+    const fit = () => {
+      const el = wrapRef.current
+      if (!el || !vv) return
+      el.style.height = `${vv.height}px`
+      el.style.top = `${vv.offsetTop}px`
+      el.classList.toggle('kb', window.innerHeight - vv.height > 120)
+    }
+    fit()
+    vv?.addEventListener('resize', fit)
+    vv?.addEventListener('scroll', fit)
+    return () => {
+      document.body.style.overflow = prev
+      window.removeEventListener('keydown', onKey)
+      vv?.removeEventListener('resize', fit)
+      vv?.removeEventListener('scroll', fit)
+    }
+  }, [open, requestClose])
+
   if (!open) return null
   return (
-    <div className="sheet-wrap" onClick={onClose}>
-      <div className={`sheet ${wide ? 'wide' : ''}`} onClick={e => e.stopPropagation()} role="dialog" aria-modal>
+    <div ref={wrapRef} className={`sheet-wrap ${closing ? 'closing' : ''}`} onClick={requestClose}>
+      <div className={`sheet ${tall ? 'tall' : ''}`} onClick={e => e.stopPropagation()} role="dialog" aria-modal>
         <div className="sheet-grip" />
         {title != null && (
           <div className="sheet-head">
             <div className="sheet-title">{title}</div>
-            <button className="icon-btn sm" onClick={onClose} aria-label="Закрыть"><Icon name="x" size={16} /></button>
+            <button className="icon-btn sm" onClick={requestClose} aria-label="Закрыть"><Icon name="x" size={16} /></button>
           </div>
         )}
         {children}

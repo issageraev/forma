@@ -50,7 +50,22 @@ export function search(list: Exercise[], query: string, category?: Category): Ex
       return { e, score }
     })
     .filter(x => x.score < 9)
-  return scored.sort((a, b) => a.score - b.score || a.e.name.localeCompare(b.e.name, 'ru')).map(x => x.e)
+  if (scored.length) return scored.sort((a, b) => a.score - b.score || a.e.name.localeCompare(b.e.name, 'ru')).map(x => x.e)
+  return looseSearch(pool, q)
+}
+
+/** Запасной поиск при опечатках: совпадение отдельных слов с точностью до одной буквы */
+function looseSearch(pool: Exercise[], q: string): Exercise[] {
+  const qWords = q.split(' ').filter(w => w.length >= 2)
+  const wordMatch = (qw: string, nw: string) => nw.startsWith(qw) || (qw.length >= 4 && levenshtein(qw, nw.slice(0, qw.length)) <= 1)
+  return pool
+    .map(e => {
+      const words = namesOf(e).flatMap(n => n.split(' '))
+      return { e, hits: qWords.filter(qw => words.some(nw => wordMatch(qw, nw))).length }
+    })
+    .filter(x => x.hits > 0)
+    .sort((a, b) => b.hits - a.hits || a.e.name.length - b.e.name.length)
+    .map(x => x.e)
 }
 
 /**

@@ -44,6 +44,11 @@ describe('справочник упражнений', () => {
   it('не предлагает похожее для совсем другого', () => {
     expect(findSimilar(CATALOG, 'Бёрпи')).toBeUndefined()
   })
+  it('при опечатке список не пустеет', () => {
+    const r = search(CATALOG, 'жим лежо')
+    expect(r[0].id).toBe('bench-press')
+    expect(search(CATALOG, 'присидания').map(e => e.id)).toContain('squat')
+  })
   it('поиск ставит совпадение по началу выше', () => {
     expect(search(CATALOG, 'жим')[0].name.startsWith('Жим')).toBe(true)
   })

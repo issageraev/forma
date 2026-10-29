@@ -55,8 +55,8 @@ function PlanForm({ date, workouts, settings, titles, initialTitle = '', templat
         </div>
       )}
       {tpl && (
-        <label className="banner" style={{ background: 'rgba(248,231,216,.75)', color: 'var(--ink)' }}>
-          <input type="checkbox" checked={useTpl} onChange={e => setUseTpl(e.target.checked)} style={{ width: 20, height: 20, accentColor: 'var(--orange)' }} />
+        <label className="banner tpl">
+          <input type="checkbox" checked={useTpl} onChange={e => setUseTpl(e.target.checked)} />
           <span className="grow"><b>Взять упражнения из «{tpl.title}»</b><br /><span className="muted small">{fmtRelative(tpl.date)} · {tpl.exercises.length} упражнения с прошлыми весами</span></span>
         </label>
       )}
@@ -244,11 +244,11 @@ export function CalendarScreen({ workouts, byDate, exercises, settings, titles, 
           </div>
         ))}
         <div className="legend">
-          <span><i style={{ background: 'var(--orange)' }} />Грудь</span>
-          <span><i style={{ background: 'var(--violet)' }} />Спина</span>
-          <span><i style={{ background: 'var(--green)' }} />Ноги</span>
-          <span><i style={{ background: 'var(--amber)' }} />Плечи</span>
-          <span><i style={{ background: 'var(--pink)' }} />Руки</span>
+          <span><i className="l-orange" />Грудь</span>
+          <span><i className="l-violet" />Спина</span>
+          <span><i className="l-green" />Ноги</span>
+          <span><i className="l-amber" />Плечи</span>
+          <span><i className="l-pink" />Руки</span>
           <span><i className="box" />план</span>
         </div>
       </section>
